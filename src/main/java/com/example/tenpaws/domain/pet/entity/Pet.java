@@ -1,12 +1,15 @@
 package com.example.tenpaws.domain.pet.entity;
 
+import com.example.tenpaws.domain.pet.dto.PetRequestDTO;
 import com.example.tenpaws.domain.shelter.entity.Shelter;
 import jakarta.persistence.*;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @Entity
 @Table(name = "pets")
@@ -38,12 +41,24 @@ public class Pet {
 
 
     @Builder
-    public Pet(Long id, String species, String size, int age) {
+    public Pet(Long id, String species, String size, int age, String personality, int exerciseLevel, Shelter shelter) {
         this.id = id;
         this.species = species;
         this.size = size;
         this.age = age;
+        this.personality = personality;
+        this.exerciseLevel = exerciseLevel;
+        this.shelter = shelter;
     }
 
-    // Getters and setters
+    // 필드 업데이트 메서드
+    public void updateFields(PetRequestDTO requestDTO) {
+        if (requestDTO.getSpecies() != null) this.species = requestDTO.getSpecies();
+        if (requestDTO.getSize() != null) this.size = requestDTO.getSize();
+        if (requestDTO.getAge() != 0) this.age = requestDTO.getAge();
+        if (requestDTO.getPersonality() != null) this.personality = requestDTO.getPersonality();
+        if (requestDTO.getExerciseLevel() != 0) this.exerciseLevel = requestDTO.getExerciseLevel();
+    }
+
+
 }

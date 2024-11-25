@@ -1,18 +1,31 @@
 package com.example.tenpaws.domain.shelter.dto;
 
 import com.example.tenpaws.domain.shelter.entity.Shelter;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
 @NoArgsConstructor
 public class ShelterRequestDTO {
-    private String username;         // 이름
-    private String pw;               // 비밀번호
-    private String shelterName;      // 보호소 이름
-    private String address;          // 보호소 번호
-    private String phoneNumber;      // 보호소 휴대폰 번호
-    private String email;            // 보호소 이메일
+    @NotBlank(message = "이름은 필수 항목입니다.")
+    private String username;
+
+    @NotBlank(message = "비밀번호는 필수 항목입니다.")
+    private String pw;
+
+    @NotBlank(message = "보호소 이름은 필수 항목입니다.")
+    private String shelterName;
+
+    @NotBlank(message = "주소는 필수 항목입니다.")
+    private String address;
+
+    private String phoneNumber;
+
+    @Email(message = "유효한 이메일을 입력해주세요.")
+    private String email;
 
     public Shelter toEntity() {
         return Shelter.builder()

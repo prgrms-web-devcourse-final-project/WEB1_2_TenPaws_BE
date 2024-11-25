@@ -1,15 +1,16 @@
 package com.example.tenpaws.domain.shelter.entity;
 
 import com.example.tenpaws.domain.pet.entity.Pet;
+import com.example.tenpaws.domain.shelter.dto.ShelterRequestDTO;
+import com.example.tenpaws.global.entity.UserRole;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @Entity
 @Table(name = "shelters")
@@ -17,7 +18,7 @@ public class Shelter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shelter_id", unique = true, nullable = false)
+    @Column(name = "shelter_id")
     private Long id;
 
     @Column(name = "username", nullable = false, length = 255)
@@ -41,11 +42,25 @@ public class Shelter {
     @OneToMany(mappedBy = "shelter", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pet> pets = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false)
+    private UserRole userRole;
+
     public void addPet(Pet pet) {
         if (!pets.contains(pet)) {
             pets.add(pet);
             pet.setShelter(this);
         }
+    }
+
+    // Update method
+    public void updateFields(ShelterRequestDTO requestDTO) {
+        if (requestDTO.getUsername() != null) this.username = requestDTO.getUsername();
+        if (requestDTO.getPw() != null) this.pw = requestDTO.getPw();
+        if (requestDTO.getShelterName() != null) this.shelterName = requestDTO.getShelterName();
+        if (requestDTO.getAddress() != null) this.address = requestDTO.getAddress();
+        if (requestDTO.getPhoneNumber() != null) this.phoneNumber = requestDTO.getPhoneNumber();
+        if (requestDTO.getEmail() != null) this.email = requestDTO.getEmail();
     }
 
     public void removePet(Pet pet) {
@@ -55,7 +70,7 @@ public class Shelter {
         }
     }
 
-    @Builder //일단 여기 넣어두고
+    @Builder
     public Shelter(Long id, String username, String pw, String shelterName, String address, String phoneNumber, String email) {
         this.id = id;
         this.username = username;

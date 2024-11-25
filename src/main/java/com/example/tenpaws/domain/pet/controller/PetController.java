@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/pets")
@@ -17,7 +18,12 @@ public class PetController {
     @Autowired
     private PetService petService;
 
-    @GetMapping("/slist/{shelterId}") // 쉘터id 로 전체 조회기능인데, 전체 목록에 반영할 all list로 변경할 예정입니다
+    @GetMapping
+    public List<PetResponseDTO> getPetList() {
+        return petService.getPetList();
+    }
+
+    @GetMapping("/{shelterId}")
     public List<PetResponseDTO> getAllPets(@PathVariable Long shelterId) {
         return petService.getAllPets(shelterId);
     }
@@ -40,8 +46,14 @@ public class PetController {
     }
 
     @DeleteMapping("/{shelterId}/{petId}")
-    public ResponseEntity<Void> deletePet(@PathVariable Long shelterId, @PathVariable Long petId) {
-        petService.deletePet(shelterId, petId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public ResponseEntity<Map<String, String>> deletePet(@PathVariable Long shelterId, @PathVariable Long petId) {
+        try {
+            petService.deletePet(shelterId, petId);
+            return ResponseEntity.ok(Map.of("result", "success"));
+        } catch (Exception e) {
+            // 예외 처리 로직
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("result", "fail"));
+        }
     }
 }

@@ -1,9 +1,12 @@
 package com.example.tenpaws.domain.pet.dto;
 
 import com.example.tenpaws.domain.pet.entity.Pet;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PetRequestDTO {
     private String species;
     private String size;
@@ -12,13 +15,16 @@ public class PetRequestDTO {
     private int exerciseLevel;
 
     public Pet toEntity() {
-        Pet pet = new Pet();
-        pet.setSpecies(this.species);
-        pet.setSize(this.size);
-        pet.setAge(this.age);
-        pet.setPersonality(this.personality);
-        pet.setExerciseLevel(this.exerciseLevel);
-        return pet;
+        return Pet.builder()
+                .species(this.species)
+                .size(this.size)
+                .age(this.age)
+                .personality(this.personality)
+                .exerciseLevel(this.exerciseLevel)
+                .build();
     }
+
+
+
 }
 
