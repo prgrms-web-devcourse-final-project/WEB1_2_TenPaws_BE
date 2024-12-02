@@ -19,14 +19,6 @@ public class WebSocketEventListener {
 
     @EventListener
     public void handleSessionConnectEvent(SessionConnectEvent event) {
-        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        String username = accessor.getUser().getName();
-        if (userRegistry.getUser(username) != null) {
-            messagingTemplate.convertAndSendToUser(
-                    username,
-                    "/queue/close",
-                    "중복 연결 감지");
-        }
     }
 
     @EventListener

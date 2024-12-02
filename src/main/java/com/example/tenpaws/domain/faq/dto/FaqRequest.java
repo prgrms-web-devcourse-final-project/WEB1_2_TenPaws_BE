@@ -3,10 +3,12 @@ package com.example.tenpaws.domain.faq.dto;
 import com.example.tenpaws.domain.faq.entity.Faq;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class FaqRequest {
     private Long faqId;
@@ -21,12 +23,6 @@ public class FaqRequest {
         this.faqId = faqId;
         this.content = content;
         this.parentId = parentId;
-    }
-
-    public FaqRequest(Faq faq) {
-        this.faqId = faq.getId();
-        this.content = faq.getContent();
-        this.parentId = faq.getParent().getId();
     }
 
     public Faq toEntity(Faq faq) {

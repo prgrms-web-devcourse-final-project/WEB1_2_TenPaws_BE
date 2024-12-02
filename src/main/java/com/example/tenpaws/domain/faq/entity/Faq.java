@@ -1,7 +1,6 @@
 package com.example.tenpaws.domain.faq.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,6 @@ import java.util.List;
 @Table(name = "faqs")
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Faq {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

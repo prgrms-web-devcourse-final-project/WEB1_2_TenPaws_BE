@@ -1,11 +1,11 @@
 package com.example.tenpaws.domain.chat.unread.dto;
 
 import com.example.tenpaws.domain.chat.unread.entity.UnReadChatMessages;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-@Data
+@Getter
 @NoArgsConstructor
 public class UnReadChatMessagesResponse {
     @NonNull

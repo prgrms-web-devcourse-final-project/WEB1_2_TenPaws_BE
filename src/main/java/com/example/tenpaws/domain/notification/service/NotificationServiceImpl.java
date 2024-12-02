@@ -4,6 +4,7 @@ import com.example.tenpaws.domain.notification.Repository.NotificationRepository
 import com.example.tenpaws.domain.notification.dto.request.CreateNotificationRequest;
 import com.example.tenpaws.domain.notification.dto.response.NotificationResponse;
 import com.example.tenpaws.domain.notification.entity.Notification;
+import com.example.tenpaws.domain.notification.entity.NotificationType;
 import com.example.tenpaws.domain.notification.sse.SseEmitters;
 import com.example.tenpaws.domain.notification.sse.UserIdentifier;
 import com.example.tenpaws.global.entity.UserRole;
@@ -64,6 +65,10 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public NotificationResponse create(CreateNotificationRequest request) {
         Notification savedNotification = notificationRepository.save(request.toEntity());
+
+        if (savedNotification.getType().name().equals(NotificationType.NEW_CHAT_MESSAGE.name())) {
+            return new NotificationResponse(savedNotification);
+        }
 
         // 비동기로 알림 전송 처리
         try {

@@ -33,6 +33,7 @@ public enum ErrorCode {
     CHATROOM_NOT_REGISTERED(HttpStatus.BAD_REQUEST, "ChatRoom not registered"),
     CHATROOM_NOT_MODIFIED(HttpStatus.BAD_REQUEST, "ChatRoom not modified"),
     CHATROOM_NOT_DELETED(HttpStatus.BAD_REQUEST, "ChatRoom not deleted"),
+    NOT_PARTICIPANT(HttpStatus.BAD_REQUEST, "You are not participant"),
 
     // ChatMessage
     CHAT_MESSAGE_NOT_REGISTERED(HttpStatus.BAD_REQUEST, "ChatMessage not registered"),

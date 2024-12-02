@@ -2,14 +2,11 @@ package com.example.tenpaws.domain.chat.chatmessage.dto;
 
 import com.example.tenpaws.domain.chat.chatmessage.entity.ChatMessage;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
 @NoArgsConstructor
 public class ChatMessageResponse {
     @NotBlank
@@ -19,18 +16,14 @@ public class ChatMessageResponse {
     private LocalDateTime chatDate;
 
     @NotBlank
-    private String sender;
+    private String senderEmail;
 
-    @Builder
-    public ChatMessageResponse(String message, @NonNull LocalDateTime chatDate, String sender) {
-        this.message = message;
-        this.chatDate = chatDate;
-        this.sender = sender;
-    }
+    @Setter
+    private String senderName;
 
     public ChatMessageResponse(ChatMessage chatMessage) {
         this.message = chatMessage.getMessage();
         this.chatDate = chatMessage.getChatDate();
-        this.sender = chatMessage.getSender();
+        this.senderEmail = chatMessage.getSender();
     }
 }

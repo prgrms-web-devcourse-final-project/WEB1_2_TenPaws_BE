@@ -5,6 +5,13 @@ import com.example.tenpaws.domain.chat.chatmessage.dto.ChatMessageResponse;
 import com.example.tenpaws.domain.chat.chatmessage.service.ChatMessageService;
 import com.example.tenpaws.domain.chat.unread.dto.UnReadChatMessagesRequest;
 import com.example.tenpaws.domain.chat.unread.service.UnReadChatMessagesService;
+import com.example.tenpaws.domain.notification.dto.request.CreateNotificationRequest;
+import com.example.tenpaws.domain.notification.dto.response.NotificationResponse;
+import com.example.tenpaws.domain.notification.entity.Notification;
+import com.example.tenpaws.domain.notification.entity.NotificationType;
+import com.example.tenpaws.domain.notification.service.NotificationService;
+import com.example.tenpaws.global.entity.UserRole;
+import com.example.tenpaws.global.security.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -15,36 +22,52 @@ import org.springframework.messaging.simp.user.SimpUser;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Controller;
 
+import java.util.Map;
+
 @Controller
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatMessageService chatMessageService;
     private final UnReadChatMessagesService unReadChatMessagesService;
+    private final NotificationService notificationService;
+    private final CustomUserDetailsService customUserDetailsService;
     private final SimpMessagingTemplate messagingTemplate;
     private final SimpUserRegistry userRegistry;
 
     @MessageMapping("/chat/send/{chatRoomId}")
     public void sendMessage(@DestinationVariable Long chatRoomId, ChatMessageRequest chatMessageRequest) {
+        String sender = chatMessageRequest.getSender();
         String receiver = chatMessageRequest.getReceiver();
         String destination = "/topic/chatroom/" + chatRoomId;
+        Map<String, Object> senderData = customUserDetailsService.getInfosByEmail(sender);
+        Map<String, Object> receiverData = customUserDetailsService.getInfosByEmail(receiver);
 
         chatMessageRequest.setChatRoomId(chatRoomId);
         ChatMessageResponse chatMessageResponse = chatMessageService.createChatMessage(chatMessageRequest);
 
+        chatMessageResponse.setSenderName(senderData.get("username").toString());
         messagingTemplate.convertAndSend(
                 destination,
                 chatMessageResponse
         );
 
-        // 알림 완성되면 삭제
         if (!isUserSubscribed(receiver, destination)) {
+            unReadChatMessagesService.update(
+                    UnReadChatMessagesRequest.builder().chatRoomId(chatRoomId).username(receiver).unReadCount(1).build());
+
+            NotificationResponse notificationResponse = notificationService.create(CreateNotificationRequest.builder()
+                    .content(chatMessageResponse.getSenderName() + "님이 채팅을 보내셨습니다.")
+                    .type(NotificationType.NEW_CHAT_MESSAGE)
+                    .userId((Long) receiverData.get("id"))
+                    .userRole((UserRole) receiverData.get("role"))
+                    .build());
+
             messagingTemplate.convertAndSendToUser(
                     receiver,
                     "/queue/notifications",
-                    "새 채팅 메시지가 도착했습니다!"
+                    notificationResponse
             );
-            unReadChatMessagesService.update(
-                    UnReadChatMessagesRequest.builder().chatRoomId(chatRoomId).username(receiver).unReadCount(1).build());
+
         }
     }
 

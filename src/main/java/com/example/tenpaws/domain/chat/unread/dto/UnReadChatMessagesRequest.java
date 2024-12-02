@@ -1,13 +1,11 @@
 package com.example.tenpaws.domain.chat.unread.dto;
 
-import com.example.tenpaws.domain.chat.unread.entity.UnReadChatMessages;
 import com.example.tenpaws.domain.chat.chatroom.entity.ChatRoom;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import com.example.tenpaws.domain.chat.unread.entity.UnReadChatMessages;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class UnReadChatMessagesRequest {
     @NonNull

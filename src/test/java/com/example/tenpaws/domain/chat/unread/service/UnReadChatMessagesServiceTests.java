@@ -16,12 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 public class UnReadChatMessagesServiceTests {
     @Autowired
     private UnReadChatMessagesService unReadChatMessagesService;
+    @Autowired
+    private UnReadChatMessagesRepository unReadChatMessagesRepository;
 
     Long savedId;
 
@@ -46,12 +47,9 @@ public class UnReadChatMessagesServiceTests {
     @Test
     @Transactional
     void testCreate() {
-        UnReadChatMessagesRequest unReadChatMessagesRequest = UnReadChatMessagesRequest.builder()
-                .chatRoomId(savedId)
-                .username("user1")
-                .build();
+        unReadChatMessagesService.create(savedId, "user1", "user2");
 
-        assertNotNull(unReadChatMessagesService.create(savedId, "user1", "user2"));
+        assertEquals(2, unReadChatMessagesRepository.count());
     }
 
     @Test
@@ -63,9 +61,9 @@ public class UnReadChatMessagesServiceTests {
                 .unReadCount(1)
                 .build();
 
-        UnReadChatMessagesResponse unReadChatMessagesResponse = unReadChatMessagesService.update(unReadChatMessagesRequest);
+        unReadChatMessagesService.update(unReadChatMessagesRequest);
 
-        assertEquals(1, unReadChatMessagesResponse.getUnReadCount());
+        assertEquals(1, unReadChatMessagesRepository.findAll().get(0).getUnReadCount());
     }
 
     @Test

@@ -3,12 +3,10 @@ package com.example.tenpaws.domain.chat.chatmessage.dto;
 import com.example.tenpaws.domain.chat.chatmessage.entity.ChatMessage;
 import com.example.tenpaws.domain.chat.chatroom.entity.ChatRoom;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class ChatMessageRequest {
     @NotBlank
@@ -27,12 +25,6 @@ public class ChatMessageRequest {
         this.message = message;
         this.sender = sender;
         this.chatRoomId = chatRoomId;
-    }
-
-    public ChatMessageRequest(ChatMessage chatMessage) {
-        this.message = chatMessage.getMessage();
-        this.sender = chatMessage.getSender();
-        this.chatRoomId = chatMessage.getChatRoom().getId();
     }
 
     public ChatMessage toEntity(ChatRoom chatRoom) {

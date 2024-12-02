@@ -23,13 +23,12 @@ public class UnReadChatMessagesServiceImpl implements UnReadChatMessagesService 
 
     @Override
     @Transactional
-    public UnReadChatMessagesResponse create(Long chatRoomId, String user1, String user2) {
+    public void create(Long chatRoomId, String user1, String user2) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new BaseException(ErrorCode.CHATROOM_NOT_FOUND));
         try {
-            createTemplate(chatRoom, chatRoomId, user1);
-            createTemplate(chatRoom, chatRoomId, user2);
-            return new UnReadChatMessagesResponse();
+            createTemplate(chatRoom, user1);
+            createTemplate(chatRoom, user2);
         } catch (Exception e) {
             throw new BaseException(ErrorCode.UNREAD_CHAT_MESSAGES_NOT_REGISTERED);
         }
@@ -37,7 +36,7 @@ public class UnReadChatMessagesServiceImpl implements UnReadChatMessagesService 
 
     @Override
     @Transactional
-    public UnReadChatMessagesResponse update(UnReadChatMessagesRequest unReadChatMessagesRequest) {
+    public void update(UnReadChatMessagesRequest unReadChatMessagesRequest) {
         UnReadChatMessages unReadChatMessages = unReadChatMessagesRepository.findByChatRoomIdAndUsername(
                         unReadChatMessagesRequest.getChatRoomId(), unReadChatMessagesRequest.getUsername())
                 .orElseThrow(() -> new BaseException(ErrorCode.UNREAD_CHAT_MESSAGES_NOT_FOUND));
@@ -46,7 +45,6 @@ public class UnReadChatMessagesServiceImpl implements UnReadChatMessagesService 
         } catch (Exception e) {
             throw new BaseException(ErrorCode.UNREAD_CHAT_MESSAGES_NOT_MODIFIED);
         }
-        return new UnReadChatMessagesResponse(unReadChatMessages);
     }
 
     @Override
@@ -55,12 +53,13 @@ public class UnReadChatMessagesServiceImpl implements UnReadChatMessagesService 
                 .stream().map(UnReadChatMessagesResponse::new).toList();
     }
 
-    private void createTemplate(ChatRoom chatRoom, Long chatRoomId, String user1) {
-        Optional<UnReadChatMessages> optionalUnReadChatMessages = unReadChatMessagesRepository.findByChatRoomIdAndUsername(chatRoomId, user1);
+    private void createTemplate(ChatRoom chatRoom, String user) {
+        Long chatRoomId = chatRoom.getId();
+        Optional<UnReadChatMessages> optionalUnReadChatMessages = unReadChatMessagesRepository.findByChatRoomIdAndUsername(chatRoomId, user);
         optionalUnReadChatMessages.map(UnReadChatMessagesResponse::new)
                 .orElseGet(() -> new UnReadChatMessagesResponse(
                         unReadChatMessagesRepository.save(
-                                UnReadChatMessagesRequest.builder().chatRoomId(chatRoomId).username(user1).build()
+                                UnReadChatMessagesRequest.builder().chatRoomId(chatRoomId).username(user).build()
                                         .toEntity(chatRoom))));
     }
 }
