@@ -22,80 +22,73 @@ public class SseEmitters {
     private static final int MAX_RETRY_COUNT = 3;
     private static final long RETRY_DELAY_MS = 1000;
 
-    public SseEmitter add(UserIdentifier userIdentifier, SseEmitter emitter) {
-        String key = userIdentifier.toKey();
-
+    public SseEmitter add(String email, SseEmitter emitter) {
         // 기존 연결이 있다면 정리
-        SseEmitter existingEmitter = this.emitters.get(key);
+        SseEmitter existingEmitter = this.emitters.get(email);
         if (existingEmitter != null) {
             existingEmitter.complete();
-            this.emitters.remove(key);
-            log.info("기존 SSE 연결 종료: {}", key);
+            this.emitters.remove(email);
+            log.info("기존 SSE 연결 종료: {}", email);
         }
 
-        this.emitters.put(key, emitter);
-        log.info("새로운 SSE 연결 추가: {}", key);
+        this.emitters.put(email, emitter);
+        log.info("새로운 SSE 연결 추가: {}", email);
 
         // 콜백에 로깅 추가
         emitter.onTimeout(() -> {
             emitter.complete();
-            this.emitters.remove(key);
-            log.info("SSE 연결 타임아웃: {}", key);
+            this.emitters.remove(email);
+            log.info("SSE 연결 타임아웃: {}", email);
         });
 
         emitter.onCompletion(() -> {
-            this.emitters.remove(key);
-            log.info("SSE 연결 완료: {}", key);
+            this.emitters.remove(email);
+            log.info("SSE 연결 완료: {}", email);
         });
 
         emitter.onError(e -> {
             emitter.completeWithError(e);
-            this.emitters.remove(key);
-            log.error("SSE 연결 에러: {}", key, e);
+            this.emitters.remove(email);
+            log.error("SSE 연결 에러: {}", email, e);
         });
 
         return emitter;
     }
 
-    public SseEmitter get(UserIdentifier userIdentifier) {
-        return this.emitters.get(userIdentifier.toKey());
+    public SseEmitter get(String email) {
+        return this.emitters.get(email);
     }
 
-    public void remove(UserIdentifier userIdentifier) {
-        String key = userIdentifier.toKey();
-        SseEmitter emitter = this.emitters.remove(key);
+    public void remove(String email) {
+        SseEmitter emitter = this.emitters.remove(email);
         if (emitter != null) {
             emitter.complete();
-            log.info("SSE 연결 제거: {}", key);
+            log.info("SSE 연결 제거: {}", email);
         }
     }
 
-    // 불변 맵 반환
     public Map<String, SseEmitter> getAll() {
         return Collections.unmodifiableMap(this.emitters);
     }
 
-    // 하트비트 전송
-    @Scheduled(fixedRate = 45000) // 45초마다 실행
+    @Scheduled(fixedRate = 45000)
     public void sendHeartbeat() {
-        emitters.forEach((key, emitter) -> {
+        emitters.forEach((email, emitter) -> {
             try {
                 emitter.send(SseEmitter.event()
                         .name("heartbeat")
                         .data("", MediaType.APPLICATION_JSON));
-                log.debug("하트비트 전송 성공: {}", key);
+                log.debug("하트비트 전송 성공: {}", email);
             } catch (IOException e) {
                 emitter.complete();
-                emitters.remove(key);
-                log.warn("하트비트 전송 실패로 연결 종료: {}", key);
+                emitters.remove(email);
+                log.warn("하트비트 전송 실패로 연결 종료: {}", email);
             }
         });
     }
 
-    // 알림 전송 with 재시도 로직
-    public boolean sendNotification(UserIdentifier userIdentifier, Object data) {
-        String key = userIdentifier.toKey();
-        SseEmitter emitter = this.emitters.get(key);
+    public boolean sendNotification(String email, Object data) {
+        SseEmitter emitter = this.emitters.get(email);
 
         if (emitter == null) {
             return false;
@@ -108,7 +101,7 @@ public class SseEmitters {
                         .data(data, MediaType.APPLICATION_JSON));
                 return true;
             } catch (IOException e) {
-                log.warn("알림 전송 실패 (시도 {}/{}): {}", i + 1, MAX_RETRY_COUNT, key);
+                log.warn("알림 전송 실패 (시도 {}/{}): {}", i + 1, MAX_RETRY_COUNT, email);
                 if (i < MAX_RETRY_COUNT - 1) {
                     try {
                         Thread.sleep(RETRY_DELAY_MS);
@@ -122,23 +115,22 @@ public class SseEmitters {
 
         // 최대 재시도 횟수 초과 시 연결 종료
         emitter.complete();
-        this.emitters.remove(key);
-        log.error("알림 전송 최대 재시도 횟수 초과로 연결 종료: {}", key);
+        this.emitters.remove(email);
+        log.error("알림 전송 최대 재시도 횟수 초과로 연결 종료: {}", email);
         return false;
     }
 
-    // 서버 종료 시 정리
     @PreDestroy
     public void destroy() {
-        emitters.forEach((key, emitter) -> {
+        emitters.forEach((email, emitter) -> {
             try {
                 emitter.send(SseEmitter.event()
                         .name("shutdown")
                         .data("서버가 종료됩니다.", MediaType.APPLICATION_JSON));
                 emitter.complete();
-                log.info("서버 종료로 인한 SSE 연결 종료: {}", key);
+                log.info("서버 종료로 인한 SSE 연결 종료: {}", email);
             } catch (IOException e) {
-                log.error("서버 종료 시 SSE 연결 종료 실패: {}", key);
+                log.error("서버 종료 시 SSE 연결 종료 실패: {}", email);
             }
         });
         emitters.clear();

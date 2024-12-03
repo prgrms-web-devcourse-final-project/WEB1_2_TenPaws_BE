@@ -12,7 +12,6 @@ public class InquiryDetailResponse {
     private final String title;
     private final String content;
     private final String writerName;
-    private final String writerType;
     private final Long viewCount;
     private final LocalDate created_at;
     private final List<CommentResponse> comments;
@@ -21,13 +20,7 @@ public class InquiryDetailResponse {
         this.id = inquiry.getId();
         this.title = inquiry.getTitle();
         this.content = inquiry.getContent();
-        if (inquiry.getUser() != null) {
-            this.writerName = inquiry.getUser().getUsername();
-            this.writerType = "USER";
-        } else {
-            this.writerName = inquiry.getShelter().getShelterName();
-            this.writerType = "SHELTER";
-        }
+        this.writerName = inquiry.getUser() == null ? inquiry.getShelter().getShelterName() : inquiry.getUser().getUsername();
         this.viewCount = inquiry.getViewCount();
         this.created_at = inquiry.getCreated_at();
         this.comments = comments;

@@ -1,20 +1,17 @@
 package com.example.tenpaws.domain.notification.service;
 
-import com.example.tenpaws.domain.notification.dto.request.CreateNotificationRequest;
+import com.example.tenpaws.domain.notification.dto.request.NotificationRequest;
 import com.example.tenpaws.domain.notification.dto.response.NotificationResponse;
-import com.example.tenpaws.domain.notification.entity.Notification;
-import com.example.tenpaws.global.entity.UserRole;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface NotificationService {
-    SseEmitter subscribe(UserRole userRole, Long userId);
-    void notify(UserRole userRole, Long userId, NotificationResponse notification);
-
-    NotificationResponse create(CreateNotificationRequest request);
-    Page<NotificationResponse> getList(Long userId, Pageable pageable);
+    SseEmitter subscribe(String email);
+    void notify(String recipientEmail, NotificationResponse notification);
+    NotificationResponse create(NotificationRequest request);
+    Page<NotificationResponse> getList(String email, Pageable pageable);
     void markAsRead(Long notificationId);
-    Long getUnreadCount(Long userId);
+    Long getUnreadCount(String email);
     void delete(Long notificationId);
 }

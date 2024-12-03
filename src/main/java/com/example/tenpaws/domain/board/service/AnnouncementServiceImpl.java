@@ -2,8 +2,7 @@ package com.example.tenpaws.domain.board.service;
 
 import com.example.tenpaws.domain.admin.entity.Admin;
 import com.example.tenpaws.domain.admin.repository.AdminRepository;
-import com.example.tenpaws.domain.board.dto.request.CreateAnnouncementRequest;
-import com.example.tenpaws.domain.board.dto.request.UpdateAnnouncementRequest;
+import com.example.tenpaws.domain.board.dto.request.AnnouncementRequest;
 import com.example.tenpaws.domain.board.dto.response.AnnouncementListViewResponse;
 import com.example.tenpaws.domain.board.dto.response.AnnouncementResponse;
 import com.example.tenpaws.domain.board.entity.Announcement;
@@ -23,36 +22,40 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final AdminRepository adminRepository;
     private final AnnouncementRepository announcementRepository;
 
+    @Override
     @Transactional
-    public Announcement create(CreateAnnouncementRequest request) {
-        Admin admin = adminRepository.findById(request.getAdminId())
+    public AnnouncementResponse create(AnnouncementRequest request, String email) {
+        Admin admin = adminRepository.findByEmail(email)
                 .orElseThrow(() -> new BaseException(ErrorCode.MEMBER_NOT_FOUND));
-        return announcementRepository.save(request.toEntity(admin));
+        Announcement savedAnnouncement = announcementRepository.save(request.toEntity(admin));
+        return new AnnouncementResponse(savedAnnouncement);
     }
 
+    @Override
     public Page<AnnouncementListViewResponse> getList(Pageable pageable) {
         return announcementRepository.findAll(pageable)
                 .map(AnnouncementListViewResponse::new);
     }
 
+    @Override
     @Transactional
     public AnnouncementResponse findById(Long announcementId) {
         Announcement announcement = announcementRepository.findById(announcementId)
                 .orElseThrow(() -> new BaseException(ErrorCode.ANNOUNCEMENT_NOT_FOUND));
-
         announcement.incrementViewCount();
         return new AnnouncementResponse(announcement);
     }
 
+    @Override
     @Transactional
-    public Announcement update(Long announcementId, UpdateAnnouncementRequest request) {
+    public AnnouncementResponse update(Long announcementId, AnnouncementRequest request) {
         Announcement announcement = announcementRepository.findById(announcementId)
                 .orElseThrow(() -> new BaseException(ErrorCode.ANNOUNCEMENT_NOT_FOUND));
-
         announcement.update(request.getCategory(), request.getTitle(), request.getContent());
-        return announcement;
+        return new AnnouncementResponse(announcement);
     }
 
+    @Override
     @Transactional
     public void delete(Long announcementId) {
         announcementRepository.findById(announcementId)

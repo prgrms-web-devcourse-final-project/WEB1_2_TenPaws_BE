@@ -2,7 +2,6 @@ package com.example.tenpaws.domain.board.entity;
 
 import com.example.tenpaws.domain.shelter.entity.Shelter;
 import com.example.tenpaws.domain.user.entity.User;
-import com.example.tenpaws.global.entity.UserRole;
 import com.example.tenpaws.global.exception.BaseException;
 import com.example.tenpaws.global.exception.ErrorCode;
 import jakarta.persistence.*;
@@ -70,22 +69,12 @@ public class Inquiry {
         this.viewCount++;
     }
 
-    public Long getWriterId() {
+    public String getWriterEmail() {
         if (user != null) {
-            return user.getId();
+            return user.getEmail();
         }
         if (shelter != null) {
-            return shelter.getId();
-        }
-        throw new BaseException(ErrorCode.WRITER_NOT_FOUND);
-    }
-
-    public UserRole getWriterRole() {
-        if (user != null) {
-            return user.getUserRole();
-        }
-        if (shelter != null) {
-            return shelter.getUserRole();
+            return shelter.getEmail();
         }
         throw new BaseException(ErrorCode.WRITER_NOT_FOUND);
     }

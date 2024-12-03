@@ -1,13 +1,11 @@
 package com.example.tenpaws.domain.notification.service;
 
 import com.example.tenpaws.domain.notification.Repository.NotificationRepository;
-import com.example.tenpaws.domain.notification.dto.request.CreateNotificationRequest;
+import com.example.tenpaws.domain.notification.dto.request.NotificationRequest;
 import com.example.tenpaws.domain.notification.dto.response.NotificationResponse;
 import com.example.tenpaws.domain.notification.entity.Notification;
 import com.example.tenpaws.domain.notification.entity.NotificationType;
 import com.example.tenpaws.domain.notification.sse.SseEmitters;
-import com.example.tenpaws.domain.notification.sse.UserIdentifier;
-import com.example.tenpaws.global.entity.UserRole;
 import com.example.tenpaws.global.exception.BaseException;
 import com.example.tenpaws.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -32,15 +30,13 @@ public class NotificationServiceImpl implements NotificationService {
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
 
     @Override
-    public SseEmitter subscribe(UserRole userRole, Long userId) {
-        UserIdentifier identifier = new UserIdentifier(userRole, userId);
-
+    public SseEmitter subscribe(String email) {
         // 기존 연결이 있다면 정리
-        SseEmitter existingEmitter = sseEmitters.get(identifier);
+        SseEmitter existingEmitter = sseEmitters.get(email);
         if (existingEmitter != null) {
             existingEmitter.complete();
-            sseEmitters.remove(identifier);
-            log.info("기존 SSE 연결 종료: {}", identifier);
+            sseEmitters.remove(email);
+            log.info("기존 SSE 연결 종료: {}", email);
         }
 
         SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
@@ -51,8 +47,8 @@ public class NotificationServiceImpl implements NotificationService {
                     .name("SSE")
                     .data("연결되었습니다.", MediaType.APPLICATION_JSON));
 
-            sseEmitters.add(identifier, emitter);
-            log.info("새로운 SSE 연결 생성: {}", identifier);
+            sseEmitters.add(email, emitter);
+            log.info("새로운 SSE 연결 생성: {}", email);
         } catch (IOException e) {
             log.error("SSE 연결 중 오류 발생", e);
             emitter.completeWithError(e);
@@ -63,16 +59,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public NotificationResponse create(CreateNotificationRequest request) {
+    public NotificationResponse create(NotificationRequest request) {
         Notification savedNotification = notificationRepository.save(request.toEntity());
-
         if (savedNotification.getType().name().equals(NotificationType.NEW_CHAT_MESSAGE.name())) {
             return new NotificationResponse(savedNotification);
         }
-
         // 비동기로 알림 전송 처리
         try {
-            notify(request.getUserRole(), request.getUserId(), new NotificationResponse(savedNotification));
+            notify(request.getRecipientEmail(), new NotificationResponse(savedNotification));
         } catch (Exception e) {
             log.error("실시간 알림 전송 실패: {}", e.getMessage());
             // 알림 전송 실패는 notification 생성 자체의 실패로 이어지지 않도록 함
@@ -82,23 +76,22 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void notify(UserRole userRole, Long userId, NotificationResponse notification) {
-        UserIdentifier identifier = new UserIdentifier(userRole, userId);
-
+    public void notify(String recipientEmail, NotificationResponse notification) {
         // SseEmitters 클래스의 sendNotification 메서드 활용
-        boolean sent = sseEmitters.sendNotification(identifier, notification);
+        boolean sent = sseEmitters.sendNotification(recipientEmail, notification);
 
         if (!sent) {
-            log.warn("알림 전송 실패 - 연결을 찾을 수 없거나 전송 중 오류 발생: user={}, role={}", userId, userRole);
+            log.warn("알림 전송 실패 - 연결을 찾을 수 없거나 전송 중 오류 발생: recipientEmail={}", recipientEmail);
         }
     }
 
-    // 알림 조회 관련 메서드
-    public Page<NotificationResponse> getList(Long userId, Pageable pageable) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+    @Override
+    public Page<NotificationResponse> getList(String email, Pageable pageable) {
+        return notificationRepository.findByRecipientEmailOrderByCreatedAtDesc(email, pageable)
                 .map(NotificationResponse::new);
     }
 
+    @Override
     @Transactional
     public void markAsRead(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
@@ -106,10 +99,12 @@ public class NotificationServiceImpl implements NotificationService {
         notification.markAsRead();
     }
 
-    public Long getUnreadCount(Long userId) {
-        return notificationRepository.countByUserIdAndIsReadFalse(userId);
+    @Override
+    public Long getUnreadCount(String email) {
+        return notificationRepository.countByRecipientEmailAndIsReadFalse(email);
     }
 
+    @Override
     @Transactional
     public void delete(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)

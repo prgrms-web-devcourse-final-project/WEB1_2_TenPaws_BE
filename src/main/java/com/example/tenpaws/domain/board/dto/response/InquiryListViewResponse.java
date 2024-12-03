@@ -9,14 +9,14 @@ import java.time.LocalDate;
 public class InquiryListViewResponse {
     private final Long id;
     private final String title;
-    private final String userName;
+    private final String writerName;
     private final Long viewCount;
     private final LocalDate created_at;
 
     public InquiryListViewResponse(Inquiry inquiry) {
         this.id = inquiry.getId();
         this.title = inquiry.getTitle();
-        this.userName = inquiry.getUser().getUsername();
+        this.writerName = inquiry.getUser() == null ? inquiry.getShelter().getShelterName() : inquiry.getUser().getUsername();
         this.viewCount = inquiry.getViewCount();
         this.created_at = inquiry.getCreated_at();
     }

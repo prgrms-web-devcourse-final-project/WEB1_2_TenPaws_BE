@@ -10,9 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class CreateAnnouncementRequest {
-
-    private Long adminId;
+public class AnnouncementRequest {
     private AnnouncementCategory category;
     private String title;
     private String content;

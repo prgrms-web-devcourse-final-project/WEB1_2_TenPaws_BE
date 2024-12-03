@@ -2,8 +2,8 @@ package com.example.tenpaws.domain.board.service;
 
 import com.example.tenpaws.domain.admin.entity.Admin;
 import com.example.tenpaws.domain.admin.repository.AdminRepository;
-import com.example.tenpaws.domain.board.dto.request.CreateCommentRequest;
-import com.example.tenpaws.domain.board.dto.request.UpdateCommentRequest;
+import com.example.tenpaws.domain.board.dto.request.CommentRequest;
+import com.example.tenpaws.domain.board.dto.response.CommentResponse;
 import com.example.tenpaws.domain.board.entity.Comment;
 import com.example.tenpaws.domain.board.entity.Inquiry;
 import com.example.tenpaws.domain.board.repository.CommentRepository;
@@ -26,11 +26,12 @@ public class CommentServiceImpl implements CommentService {
     private final NotificationService notificationService;
     private final NotificationFactory notificationFactory;
 
+    @Override
     @Transactional
-    public Comment create(Long inquiryId, CreateCommentRequest request) {
+    public CommentResponse create(Long inquiryId, CommentRequest request, String email) {
         Inquiry inquiry = inquiryRepository.findById(inquiryId)
                 .orElseThrow(() -> new BaseException(ErrorCode.INQUIRY_NOT_FOUND));
-        Admin admin = adminRepository.findById(request.getAdminId())
+        Admin admin = adminRepository.findByEmail(email)
                 .orElseThrow(() -> new BaseException(ErrorCode.ADMIN_NOT_FOUND));
 
         Comment comment = commentRepository.save(Comment.builder()
@@ -41,22 +42,28 @@ public class CommentServiceImpl implements CommentService {
 
         // 문의 답변 알림 생성 및 저장
         notificationService.create(
-                notificationFactory.createInquiryAnsweredNotification(
-                        inquiry.getWriterId(),
-                        inquiry.getWriterRole()
-                )
+                notificationFactory.createInquiryAnsweredNotification(inquiry.getWriterEmail())
         );
-        return comment;
+        return new CommentResponse(comment);
     }
 
+    @Override
+    public CommentResponse findById(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BaseException(ErrorCode.COMMENT_NOT_FOUND));
+        return new CommentResponse(comment);
+    }
+
+    @Override
     @Transactional
-    public Comment update(Long commentId, UpdateCommentRequest request) {
+    public CommentResponse update(Long commentId, CommentRequest request) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new BaseException(ErrorCode.COMMENT_NOT_FOUND));
         comment.update(request.getContent());
-        return comment;
+        return new CommentResponse(comment);
     }
 
+    @Override
     @Transactional
     public void delete(Long commentId) {
         if (!commentRepository.existsById(commentId)) {

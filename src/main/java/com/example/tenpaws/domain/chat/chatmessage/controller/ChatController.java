@@ -5,12 +5,10 @@ import com.example.tenpaws.domain.chat.chatmessage.dto.ChatMessageResponse;
 import com.example.tenpaws.domain.chat.chatmessage.service.ChatMessageService;
 import com.example.tenpaws.domain.chat.unread.dto.UnReadChatMessagesRequest;
 import com.example.tenpaws.domain.chat.unread.service.UnReadChatMessagesService;
-import com.example.tenpaws.domain.notification.dto.request.CreateNotificationRequest;
+import com.example.tenpaws.domain.notification.dto.request.NotificationRequest;
 import com.example.tenpaws.domain.notification.dto.response.NotificationResponse;
-import com.example.tenpaws.domain.notification.entity.Notification;
 import com.example.tenpaws.domain.notification.entity.NotificationType;
 import com.example.tenpaws.domain.notification.service.NotificationService;
-import com.example.tenpaws.global.entity.UserRole;
 import com.example.tenpaws.global.security.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -55,11 +53,10 @@ public class ChatController {
             unReadChatMessagesService.update(
                     UnReadChatMessagesRequest.builder().chatRoomId(chatRoomId).username(receiver).unReadCount(1).build());
 
-            NotificationResponse notificationResponse = notificationService.create(CreateNotificationRequest.builder()
+            NotificationResponse notificationResponse = notificationService.create(NotificationRequest.builder()
                     .content(chatMessageResponse.getSenderName() + "님이 채팅을 보내셨습니다.")
                     .type(NotificationType.NEW_CHAT_MESSAGE)
-                    .userId((Long) receiverData.get("id"))
-                    .userRole((UserRole) receiverData.get("role"))
+                    .recipientEmail(receiver)
                     .build());
 
             messagingTemplate.convertAndSendToUser(

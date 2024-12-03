@@ -2,7 +2,6 @@ package com.example.tenpaws.domain.notification.dto.request;
 
 import com.example.tenpaws.domain.notification.entity.Notification;
 import com.example.tenpaws.domain.notification.entity.NotificationType;
-import com.example.tenpaws.global.entity.UserRole;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -14,23 +13,21 @@ import lombok.AllArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateNotificationRequest {
+public class NotificationRequest {
     @NotNull(message = "알림 타입은 필수입니다")
     private NotificationType type;
 
     @NotBlank(message = "알림 내용은 필수입니다")
     private String content;
 
-    private Long userId;
-
-    private UserRole userRole;    // 알림을 받을 사용자의 역할
+    @NotBlank(message = "수신자 이메일은 필수입니다")
+    private String recipientEmail;
 
     public Notification toEntity() {
         return Notification.builder()
                 .content(content)
                 .type(type)
-                .userId(userId)
-                .userRole(userRole)
+                .recipientEmail(recipientEmail)
                 .build();
     }
 }

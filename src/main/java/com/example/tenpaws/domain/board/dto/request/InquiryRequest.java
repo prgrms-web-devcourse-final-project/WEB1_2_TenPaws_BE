@@ -10,9 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class CreateInquiryRequest {
-    private Long userId;
-    private Long shelterId;
+public class InquiryRequest {
     private String title;
     private String content;
 

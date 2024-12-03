@@ -43,7 +43,8 @@ public class Announcement {
     private LocalDate created_at;
 
     @Builder
-    public Announcement(Admin admin, AnnouncementCategory category, String title, String content, Long viewCount) {
+    public Announcement(Long id, Admin admin, AnnouncementCategory category, String title, String content, Long viewCount) {
+        this.id = id; // 테스트용 ID
         this.admin = admin;
         this.category = category;
         this.title = title;
