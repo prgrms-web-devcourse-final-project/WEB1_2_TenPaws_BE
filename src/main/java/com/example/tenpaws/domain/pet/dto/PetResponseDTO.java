@@ -2,59 +2,53 @@ package com.example.tenpaws.domain.pet.dto;
 
 import com.example.tenpaws.domain.pet.entity.Pet;
 import com.example.tenpaws.domain.pet.species.Species;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.List;
 
 @Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@Builder
 public class PetResponseDTO {
-    private Long petId;
-    private String petName;
-    private Species species;
-    private String size;
-    private String age;
-    private String gender;
-    private String neutering;
-    private String reason;
-    private String preAdoption;
-    private String vaccinated;
-    private String extra;
-    private String personality;
-    private int exerciseLevel;
-    private Long shelterId;
-    private String shelterName;
-    private String shelterAddress;
-    private List<String> imageUrls;
+    private final Long petId;
+    private final String petName;
+    private final Species species;
+    private final String size;
+    private final String age;
+    private final String gender;
+    private final String neutering;
+    private final String reason;
+    private final String preAdoption;
+    private final String vaccinated;
+    private final String extra;
+    private final String personality;
+    private final int exerciseLevel;
+    private final Long shelterId;
+    private final String shelterName;
+    private final String shelterAddress;
+    private final List<String> imageUrls;
+    private final Pet.PetStatus status;
 
     public static PetResponseDTO fromEntity(Pet pet) {
-        PetResponseDTO dto = new PetResponseDTO();
-        dto.setPetId(pet.getId());
-        dto.setPetName(pet.getPetName());
-        dto.setSpecies(pet.getSpecies());
-        dto.setSize(pet.getSize());
-        dto.setAge(pet.getAge());
-        dto.setGender(pet.getGender());
-        dto.setNeutering(pet.getNeutering());
-        dto.setReason(pet.getReason());
-        dto.setPreAdoption(pet.getPreAdoption());
-        dto.setVaccinated(pet.getVaccinated());
-        dto.setExtra(pet.getExtra());
-        dto.setPersonality(pet.getPersonality());
-        dto.setExerciseLevel(pet.getExerciseLevel());
-        dto.setShelterId(pet.getShelter().getId());
-        dto.setShelterName(pet.getShelter().getShelterName());
-        dto.setShelterAddress(pet.getShelter().getAddress());
-        // Convert List<MultipartFile> to List<String> (image URLs)
-        if (pet.getImageUrls() != null) {
-            dto.setImageUrls(pet.getImageUrls()); // Pet 클래스에는 List<String> imageUrls 필드가 있음
-        }
-        return dto;
+        return PetResponseDTO.builder()
+                .petId(pet.getId())
+                .petName(pet.getPetName())
+                .species(pet.getSpecies())
+                .size(pet.getSize())
+                .age(pet.getAge())
+                .gender(pet.getGender())
+                .neutering(pet.getNeutering())
+                .reason(pet.getReason())
+                .preAdoption(pet.getPreAdoption())
+                .vaccinated(pet.getVaccinated())
+                .extra(pet.getExtra())
+                .personality(pet.getPersonality())
+                .exerciseLevel(pet.getExerciseLevel())
+                .shelterId(pet.getShelter().getId())
+                .shelterName(pet.getShelter().getShelterName())
+                .shelterAddress(pet.getShelter().getAddress())
+                .imageUrls(pet.getImageUrls() != null ? pet.getImageUrls() : List.of()) // null 처리
+                .status(pet.getStatus())
+                .build();
     }
-
 }
