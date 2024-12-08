@@ -1,6 +1,5 @@
 package com.example.tenpaws.domain.pet.entity;
 
-import org.springframework.web.multipart.MultipartFile;
 import com.example.tenpaws.domain.pet.dto.PetRequestDTO;
 import com.example.tenpaws.domain.pet.species.Species;
 import com.example.tenpaws.domain.shelter.entity.Shelter;
@@ -11,7 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Setter
 @Getter
@@ -82,7 +80,7 @@ public class Pet {
 
     @Builder
     public Pet(Long id, String petName, Species species,  String size, String age, String gender, String neutering, String reason,
-               String preAdoption, String vaccinated, String extra, String personality, int exerciseLevel, Shelter shelter, List<String> imageUrls) {
+               String preAdoption, String vaccinated, String extra, String personality, int exerciseLevel, Shelter shelter, List<String> imageUrls, PetStatus status) {
         this.id = id;
         this.petName = petName;
         this.species = species;
@@ -98,6 +96,7 @@ public class Pet {
         this.exerciseLevel = exerciseLevel;
         this.shelter = shelter;
         this.imageUrls = imageUrls;
+        this.status = status;
     }
 
     // 필드 업데이트 메서드
